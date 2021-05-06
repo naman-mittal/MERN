@@ -3,7 +3,7 @@ var multer = require('multer');
 const path = require('path');
 const router = express.Router();
 const User = require("../models/User");
-
+const fs = require('fs');
 
 
 
@@ -61,7 +61,7 @@ router.post("/upload/:id",getUser, async (req, res) => {
         callback(null, "./public/Uploads/Images");
     },
     filename: function(req, file, callback) {
-      filename = id+'.'+ file.originalname.split(".")[1]
+      filename = id+Date.now()+'.'+ file.originalname.split(".")[1]
         callback(null, filename);
     }
   });
@@ -77,6 +77,17 @@ router.post("/upload/:id",getUser, async (req, res) => {
     }
 
     let user = res.user
+
+    const filepath = res.user.image
+
+    const path = './public/uploads/images/' + filepath.substring(filepath.lastIndexOf('/')+1)
+
+fs.unlink(path, (err) => {
+  if (err) {
+    console.error(err)
+   
+  }
+})
 
     res.user.image= `http://localhost:4000/static/uploads/images/${filename}`
     
