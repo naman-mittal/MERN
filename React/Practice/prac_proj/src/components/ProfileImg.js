@@ -83,7 +83,7 @@ export default function BadgeAvatars(props) {
 
     console.log(fileUploaded)
 
-    dispatch(actions.UploadImage('6094d50f9840d136b4861627',fileUploaded))
+    dispatch(actions.UploadImage('6094ec41b59cc30d28a3e5c6',fileUploaded))
 
   }
 

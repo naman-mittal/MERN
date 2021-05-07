@@ -99,7 +99,7 @@ export default function DataGrid(props) {
     // let loginUser = JSON.parse(localStorage.getItem("user"));
     // let id = props.viewId ? props.viewId : loginUser.id;
     
-    const id = '6094d50f9840d136b4861627'
+    const id = '6094ec41b59cc30d28a3e5c6'
 
     // const id = '60937f1ffa8d0a2c94b14304'
     
