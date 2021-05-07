@@ -10,6 +10,11 @@ function generateAccessToken(user) {
     return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
   }
 
+  function generateRefreshToken(user) {
+    
+    return jwt.sign(user, process.env.REFRESH_SECRET);
+  }
+
   function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
 
@@ -29,4 +34,25 @@ function generateAccessToken(user) {
     }
   }
 
-  module.exports = {generateAccessToken,authenticateToken}
+  function authenticateRefreshToken(res,token)
+  {
+
+     jwt.verify(token, process.env.REFRESH_SECRET, (err, user) => {
+        if (err) {
+            res.status(403).send("authentication failed");
+        }
+        console.log(user)
+        const accessToken = generateAccessToken({username : user.username, role : user.role})
+
+        console.log(accessToken)
+
+        res.json({
+            accessToken
+        });
+       
+    });
+
+
+  }
+
+  module.exports = {generateAccessToken,generateRefreshToken,authenticateToken,authenticateRefreshToken}

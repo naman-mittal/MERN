@@ -61,6 +61,9 @@ const useStyles = makeStyles((theme) => ({
     color: '#fff',
     backgroundColor: green[500],
   },
+  mid: {
+  margin : 'auto',
+  },
 }));
 
 export default function BadgeAvatars(props) {
@@ -80,7 +83,7 @@ export default function BadgeAvatars(props) {
 
     console.log(fileUploaded)
 
-    dispatch(actions.UploadImage('6092bbe362f32a34c8f40291',fileUploaded))
+    dispatch(actions.UploadImage('6094d50f9840d136b4861627',fileUploaded))
 
   }
 
@@ -97,6 +100,7 @@ export default function BadgeAvatars(props) {
         <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
       </StyledBadge> */}
       <Badge
+      className = {classes.mid}
         overlap="circle"
         anchorOrigin={{
           vertical: 'bottom',
