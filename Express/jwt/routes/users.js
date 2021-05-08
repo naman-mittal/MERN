@@ -45,7 +45,7 @@ router.get("/",jwt.authenticateToken, async (req, res) => {
       }
 }); 
 // Get One Route
-router.get("/:id",getUser, async (req, res) => {
+router.get("/:id",jwt.authenticateToken,getUser, async (req, res) => {
     res.json(res.user);
 }); 
 // Create One Route
@@ -189,7 +189,7 @@ router.post('/logout', (req, res) => {
   const { token } = req.body;
   refreshTokens = refreshTokens.filter(t => t !== token);
 
-  res.send("Logout successful");
+  res.json({message : 'Logout successfull'})
 });
 
 // Edit One Route PUT version

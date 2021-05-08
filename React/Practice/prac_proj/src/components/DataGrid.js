@@ -24,6 +24,7 @@ import { Link, useRouteMatch } from "react-router-dom";
 import { deepPurple } from "@material-ui/core/colors";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from 'react-number-format';
+import { useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -89,6 +90,8 @@ export default function DataGrid(props) {
 
   const user = useSelector((state) => state.user);
 
+  const [id,setId] = useState('')
+
   const dispatch = useDispatch();
 
   const classes = useStyles();
@@ -96,11 +99,11 @@ export default function DataGrid(props) {
   useEffect(() => {
     //console.log('param id = ' + match.params.id)
     
-    // let loginUser = JSON.parse(localStorage.getItem("user"));
+     let loginUser = JSON.parse(localStorage.getItem("user"));
     // let id = props.viewId ? props.viewId : loginUser.id;
     
-    const id = '6094ec41b59cc30d28a3e5c6'
-
+    const id = loginUser.id
+    setId(id)
     // const id = '60937f1ffa8d0a2c94b14304'
     
     dispatch(actions.fetchUser(id));
@@ -160,7 +163,7 @@ export default function DataGrid(props) {
         color={classes.purple}
         image = {user.image}
       ></UserImg> */}
-      <ProfileImg image = {user.image}/>
+      <ProfileImg image = {user.image} id={id}/>
       <br />
       <Grid container spacing={3}>
         <Grid item xs={12} sm={10} md={6} lg={4} xl={4}>

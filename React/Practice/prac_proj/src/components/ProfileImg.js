@@ -83,7 +83,8 @@ export default function BadgeAvatars(props) {
 
     console.log(fileUploaded)
 
-    dispatch(actions.UploadImage('6094ec41b59cc30d28a3e5c6',fileUploaded))
+    if(fileUploaded)
+    dispatch(actions.UploadImage(props.id,fileUploaded))
 
   }
 
@@ -123,7 +124,7 @@ export default function BadgeAvatars(props) {
         onChange={handleChange}
         style={{display: 'none'}} 
       />
-        <Avatar alt="Travis Howard" src={props.image} className={classes.large} />
+       <a href={props.image} target="_blank"><Avatar alt="Travis Howard" src={props.image} className={classes.large} /></a> 
       </Badge>
     </div>
   );
