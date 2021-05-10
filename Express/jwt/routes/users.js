@@ -2,8 +2,11 @@ const express = require("express");
 var multer = require('multer');
 const path = require('path');
 const User = require("../models/User");
+const Token = require("../models/Token")
 const fs = require('fs');
 const jwt = require('../controllers/jwt')
+var crypto = require('crypto');
+var nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -50,44 +53,150 @@ router.get("/:id",jwt.authenticateToken,getUser, async (req, res) => {
 }); 
 // Create One Route
 router.post("/signup", async (req, res) => {
-    const user = new User({
-       name: req.body.name,
-       username : req.body.username,
-       password : req.body.password,
-       role : req.body.role
-      });
+    // const user = new User({
+    //    name: req.body.name,
+    //    email : req.body.email,
+    //    username : req.body.username,
+    //    password : req.body.password,
+    //    role : req.body.role
+    //   });
       try {
+
+        var user = await User.findOne({email : req.body.email})
+
+        console.log("user found : ",user)
+
+        if(user) return res.status(400).send({ msg: 'The email address you have entered is already associated with another account.' })
+
+        user = await User.findOne({username : req.body.username})
+
+        if(user) return res.status(400).send({ msg: 'The username you have entered is already associated with another account.' })
+
+        user = new User({
+          name: req.body.name,
+          email : req.body.email,
+          username : req.body.username,
+          password : req.body.password,
+          role : req.body.role
+         });
+
         const newUser = await user.save();
-        res.status(201).json({ newUser });
+
+
+        var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') })
+
+        token = await token.save()
+
+        var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
+        var mailOptions = { from: 'naman.mittal_cs17@gla.ac.in', to: user.email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/users\/confirmation\/' + token.token  };
+        transporter.sendMail(mailOptions, function (err) {
+            if (err) { return res.status(500).send({ msg: err.message }); }
+            res.status(200).send('A verification email has been sent to ' + user.email + '.');
+        });
+
+       // res.status(201).json({ newUser });
       } catch (err) {
         res.status(400).json({ message: err.message });
       }
 });
 
+router.get("/confirmation/:token",async(req,res) => {
 
+  try{
+
+    const token = await Token.findOne({token : req.params.token})
+
+    if(!token) return res.status(400).send({ msg: 'We were unable to find a valid token. Your token my have expired.' })
+
+    const user = await User.findOne({_id : token._userId})
+
+    if (!user) return res.status(400).send({ msg: 'We were unable to find a user for this token.' });
+    if (user.isVerified) return res.status(400).send({ msg: 'This user has already been verified.' });
+
+    user.isVerified = true
+
+    const updatedUser = await user.save()
+
+    res.status(200).send("The account has been verified. Please log in.");
+
+  }
+  catch(err){
+
+    res.status(400).json({ msg: err.message });
+
+  }
+
+})
+
+router.post("/resend", async(req,res)=>{
+
+  try{
+   
+    const user =await User.findOne({email : req.body.email})
+
+    if(!user) return res.status(400).send({ msg: 'We were unable to find a user with that email.' })
+
+    if (user.isVerified) return res.status(400).send({ msg: 'This account has already been verified. Please log in.' })
+
+    console.log("resend user : ",user)
+    var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') })
+
+        token = await token.save()
+
+        var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
+        var mailOptions = { from: 'naman.mittal_cs17@gla.ac.in', to: user.email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/users\/confirmation\/' + token.token  };
+        transporter.sendMail(mailOptions, function (err) {
+            if (err) { return res.status(500).send({ msg: err.message }); }
+            res.status(200).send('A verification email has been sent to ' + user.email + '.');
+        });
+
+  }
+  catch(err){
+    res.status(400).json({ msg: err.message });
+  }
+
+
+})
 router.post("/login", async (req, res) => {
 
   const {username,password} = req.body
 
     try {
-      const user = await User.findOne({username,password});
+      const user = await User.findOne({username});
 
       console.log(user)
 
       if(user)
       {
 
-        const accessToken = jwt.generateAccessToken({username ,role : user.role})
+        if(user.password===password)
+        {
+          if(user.isVerified)
+          {
+            const accessToken = jwt.generateAccessToken({username ,role : user.role})
 
         const refreshToken = jwt.generateRefreshToken({username ,role : user.role})
 
         refreshTokens.push(refreshToken)
 
         res.status(200).json({username,accessToken,refreshToken,id:user._id,role:user.role});
+          }
+          else
+          {
+             res.status(401).json({msg: 'Your account has not been verified.' })
+          }
+          
+        }
+        else
+        {
+          res.status(401).json({msg : "Invalid email or password!"})
+        }
+
+        
       }
       else
       {
-        res.status(400).send('Incorrect username & password');
+        res.status(401).json({msg : `username : ${username} is not associated with any account. Check your username!`})
       }
 
      

@@ -1,249 +1,218 @@
-
-
-const findUser = (user) =>{
-    return {type : "FIND_USER",payload : {user}}
-}
+const findUser = (user) => {
+  return { type: "FIND_USER", payload: { user } };
+};
 
 export const fetchUser = (id) => {
+  console.log("inside fetch user... id = " + id);
+  let user = JSON.parse(localStorage.getItem("user"));
+  console.log(user);
 
-    console.log("inside fetch user... id = " + id)
-    let user = JSON.parse(localStorage.getItem('user'));
-    console.log(user)
-
-    const requestOptions = {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + user.accessToken
-    }
-    };
-    return dispatch => {
-
-        let code = 0;
-
-        fetch(`http://localhost:4000/users/`+id, requestOptions)
-            .then(res => {
-                console.log(res);
-                code = res.status
-
-                if(code!==200)
-                return res.text()
-
-                return res.json();
-            })
-            .then(data => {
-                console.log(data);
-
-                if(code!==200)
-                return Promise.reject(data)
-
-                dispatch(findUser(data));
-            }).catch((error) => {
-                console.log('Error:', error);
-                if(code===403)
-                {
-                    dispatch(refreshToken(fetchUser,[id]))
-                }
-              });
-
-    }
-
-}
-
-const refreshToken = (method,params) =>{
-
-    //console.log("inside fetch user... id = " + id)
-    let user = JSON.parse(localStorage.getItem('user'));
-    console.log(user)
-
-    const token = {token : user.refreshToken}
-
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + user.accessToken
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + user.accessToken,
     },
-    body : JSON.stringify(token)
-    };
-    return dispatch => {
+  };
+  return (dispatch) => {
+    let code = 0;
 
-        let code = 0;
+    fetch(`http://localhost:4000/users/` + id, requestOptions)
+      .then((res) => {
+        console.log(res);
+        code = res.status;
 
-        fetch(`http://localhost:4000/users/token`, requestOptions)
-            .then(res => {
-                console.log(res);
-                code = res.status
+        if (code !== 200) return res.text();
 
-                if(code!==200)
-                return res.text()
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
 
-                return res.json();
-            })
-            .then(data => {
-                console.log(data);
+        if (code !== 200) return Promise.reject(data);
 
-                if(code!==200)
-                return Promise.reject(data)
+        dispatch(findUser(data));
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+        if (code === 403) {
+          dispatch(refreshToken(fetchUser, [id]));
+        }
+      });
+  };
+};
 
-                user['accessToken'] = data.accessToken
+const refreshToken = (method, params) => {
+  //console.log("inside fetch user... id = " + id)
+  let user = JSON.parse(localStorage.getItem("user"));
+  console.log(user);
 
-                localStorage.setItem('user',JSON.stringify(user))
+  const token = { token: user.refreshToken };
 
-                //dispatch(fetchUser(user.id));
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + user.accessToken,
+    },
+    body: JSON.stringify(token),
+  };
+  return (dispatch) => {
+    let code = 0;
 
-                dispatch(method(...params));
-            }).catch((error) => {
-                console.log('Error:', error);
-              });
+    fetch(`http://localhost:4000/users/token`, requestOptions)
+      .then((res) => {
+        console.log(res);
+        code = res.status;
 
-    }
+        if (code !== 200) return res.text();
 
-}
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
 
-const uploadPic = (user) =>{
-    return {type : "UPDATE_USER",payload : {user}}
-}
+        if (code !== 200) return Promise.reject(data);
 
-export const UploadImage = (id,image) => {
+        user["accessToken"] = data.accessToken;
 
-    console.log("inside upload user image... id = " + id)
-    let user = JSON.parse(localStorage.getItem('user'));
-    console.log(image)
+        localStorage.setItem("user", JSON.stringify(user));
 
-    var formData = new FormData();
+        //dispatch(fetchUser(user.id));
 
-    formData.append('image',image)
+        dispatch(method(...params));
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      });
+  };
+};
 
-    const requestOptions = {
-        method: 'POST',
+const uploadPic = (user) => {
+  return { type: "UPDATE_USER", payload: { user } };
+};
+
+export const UploadImage = (id, image) => {
+  console.log("inside upload user image... id = " + id);
+  let user = JSON.parse(localStorage.getItem("user"));
+  console.log(image);
+
+  var formData = new FormData();
+
+  formData.append("image", image);
+
+  const requestOptions = {
+    method: "POST",
     //     headers: { 'Content-Type': 'application/json'
 
     // },
-    body :formData
-    };
-    return dispatch => {
-        fetch(`http://localhost:4000/users/upload/`+id, requestOptions)
-            .then(res => {
-                console.log(res);
-                return res.json();
-            })
-            .then(data => {
-                console.log(data);
-                dispatch(uploadPic(data));
-            }).catch((error) => {
-                console.error('Error:', error);
-              });
+    body: formData,
+  };
+  return (dispatch) => {
+    fetch(`http://localhost:4000/users/upload/` + id, requestOptions)
+      .then((res) => {
+        console.log(res);
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        dispatch(uploadPic(data));
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+};
 
-    }
+export const signin = (user) => {
+  return {
+    type: "LOGIN_SUCCESS",
+    payload: {
+      user,
+      alert: { type: "success", message: "Successfully logged in" },
+    },
+  };
+};
 
-}
+export const login = (username, password) => {
+  console.log("logging in with " + username + password);
 
+  const loginRequest = {
+    username: username,
+    password: password,
+  };
 
-export const signin = (user) =>{
-    return {type:'LOGIN_SUCCESS',payload : {user,alert : {type : 'success',message : 'Successfully logged in'}}}
-}
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(loginRequest),
+  };
+  return (dispatch) => {
+    let code = 0;
 
-export const login = (username,password) => {
+    fetch(`http://localhost:4000/users/login`, requestOptions)
+      .then((res) => {
+        console.log(res);
 
-    console.log("logging in with " + username + password)
+        code = res.status;
 
-    const loginRequest = {
-        username : username,
-        password : password
-    }
+       
+        return res.json();
+      })
+      .then((res) => {
+        console.log("user = " + res);
 
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body : JSON.stringify(loginRequest)
-    };
-    return dispatch => {
+        //history.push('/')
+        if (code === 200) {
+          localStorage.setItem("user", JSON.stringify(res));
+          dispatch(signin(res));
+        } else return Promise.reject(res.msg);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        dispatch({
+          type: "LOGIN_FAILED",
+          payload: { alert: { type: "error", message: code===0? error.message : error} },
+        });
+      });
+  };
+};
 
-       let code = 0
+const signout = (type, alert) => {
+  return { type, payload: { alert } };
+};
 
-        fetch(`http://localhost:4000/users/login`, requestOptions)
-            .then(res => {
-                console.log(res);
-                
-                code = res.status
+export const logout = (token) => {
+  const req = { token };
 
-                 if(code!==200)
-                 return res.text()
-                return res.json();
-            })
-            .then(res => {
-                
-    
-                console.log("user = "+res);
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  };
 
+  return (dispatch) => {
+    let code = 0;
 
-                
-                
-                    
-                    
-                    //history.push('/')
-                    if(code===200)
-                    {
-                        localStorage.setItem('user',JSON.stringify(res))
-                        dispatch(signin(res));        
-                    }
-                
-                else
-               return Promise.reject(res)
-                
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                dispatch({type:'LOGIN_FAILED',payload : {alert : {type : 'error',message : error}}})
-              });
+    fetch("http://localhost:4000/users/logout", requestOptions)
+      .then((res) => {
+        code = res.status;
 
-    }
+        if (code !== 200) return res.text();
 
-}
+        return res.json();
+      })
+      .then((res) => {
+        if (code !== 200) return Promise.reject();
 
- const signout = (type,alert) => {
+        localStorage.removeItem("user");
 
-    return {type,payload : {alert}}
-
- }
-
-export const logout = (token) =>{
-
-    const req = {token}
-
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body : JSON.stringify(req)
-    };
-
-    return dispatch =>{
-
-        let code = 0
-
-        fetch('http://localhost:4000/users/logout',requestOptions)
-        .then(res => {
-            
-            code = res.status
-
-            if(code!==200)
-            return res.text()
-
-            return res.json()
-
-        })
-        .then(res=>{
-
-            if(code!==200)
-            return Promise.reject()
-
-            localStorage.removeItem('user')
-
-            dispatch(signout('LOGOUT_SUCCESS',{type : 'success' , message : res.message}))
-
-        })
-        .catch(error=>{
-            dispatch(signout('LOGOUT_FAILED',{type : 'error' , message : error }))
-        })
-    }
-
-}
+        dispatch(
+          signout("LOGOUT_SUCCESS", { type: "success", message: res.message })
+        );
+      })
+      .catch((error) => {
+        dispatch(signout("LOGOUT_FAILED", { type: "error", message: error }));
+      });
+  };
+};
