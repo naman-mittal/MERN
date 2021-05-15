@@ -30,6 +30,14 @@ const reducer = (state = initialState, { type, payload }) => {
                 case "LOGOUT_FAILED" : 
   
                 return {loggedOut : false,alert : payload.alert}
+
+                case "SIGNUP_SUCCESS":
+
+                  return {signedUp : true , alert : payload.alert}
+           
+                  case "SIGNUP_FAILED" : 
+    
+                  return {signedUp : false,alert : payload.alert}
   
       default:
         return state;

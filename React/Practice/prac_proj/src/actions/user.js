@@ -17,7 +17,7 @@ export const fetchUser = (id) => {
   return (dispatch) => {
     let code = 0;
 
-    fetch(`http://localhost:4000/users/` + id, requestOptions)
+    fetch(`http://localhost:4000/users/get/` + id, requestOptions)
       .then((res) => {
         console.log(res);
         code = res.status;
@@ -216,3 +216,105 @@ export const logout = (token) => {
       });
   };
 };
+
+
+// export const signin = (user) => {
+//   return {
+//     type: "LOGIN_SUCCESS",
+//     payload: {
+//       user,
+//       alert: { type: "success", message: "Successfully logged in" },
+//     },
+//   };
+// };
+
+export const facebookLogin = (code) => {
+ // console.log("logging in with " + username + password);
+
+  const loginRequest = {
+    code
+  };
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(loginRequest),
+  };
+  return (dispatch) => {
+    let code = 0;
+
+    fetch(`http://localhost:4000/users/facebook/login`, requestOptions)
+      .then((res) => {
+        console.log(res);
+
+        code = res.status;
+
+       
+        return res.json();
+      })
+      .then((res) => {
+        console.log("user = " + res);
+
+        //history.push('/')
+        if (code === 200) {
+          localStorage.setItem("user", JSON.stringify(res));
+          dispatch(signin(res));
+        } else return Promise.reject(res.msg);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        dispatch({
+          type: "LOGIN_FAILED",
+          payload: { alert: { type: "error", message: code===0? error.message : error} },
+        });
+      });
+  };
+};
+
+const logup = (type, alert) => {
+  return { type, payload: { alert } };
+};
+
+export const signup = (signupRequest) =>{
+
+  signupRequest['role'] = 'user'
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(signupRequest),
+  };
+
+  return (dispatch) =>{
+
+    let code = 0
+
+    fetch('http://localhost:4000/users/signup',requestOptions)
+    .then(res=>{
+
+      console.log(res)
+
+        code = res.status
+
+        return res.json()
+
+    })
+    .then(res=>{
+
+      if(code===200)
+      {
+        dispatch(logup('SIGNUP_SUCCESS',{type : 'success', message : res.message}))
+      }
+      else
+      return Promise.reject(res)
+
+    })
+    .catch(err=>{
+
+      dispatch(logup('SIGNUP_FAILED',{type : 'error', message : err.message}))
+
+    })
+
+  }
+
+}

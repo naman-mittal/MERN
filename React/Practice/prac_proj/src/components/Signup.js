@@ -159,7 +159,7 @@ export default function SignUp() {
           username: username,
           password: password,
         };
-      //  dispatch(actions.signUp(signupRequest));
+        dispatch(actions.signup(signupRequest));
       } else {
         window.alert("Fields cannot be null");
       }

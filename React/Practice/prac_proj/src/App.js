@@ -7,6 +7,7 @@ import ForgotPassword from './components/ForgotPassword'
 import PublicRoute from './components/routes/PublicRoute'
 import PrivateRoute from './components/routes/PrivateRoute'
 import {BrowserRouter as Router,Switch} from 'react-router-dom'
+import FacebookLogin from './components/FacebookLogin';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <PublicRoute restricted={true} exact path='/signin' component = {Signin}></PublicRoute>
           <PublicRoute restricted={true} exact path='/signup' component = {Signup}></PublicRoute>
           <PublicRoute restricted={true} exact path='/forgot' component = {ForgotPassword}></PublicRoute>
+          <PublicRoute restricted={false} exact path='/facebook/success' component = {FacebookLogin}></PublicRoute>
           <PrivateRoute exact path='/home' component = {Profile}></PrivateRoute>
         </Switch>
 

@@ -24,7 +24,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import { Redirect } from "react-router";
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 
 import IconButton from '@material-ui/core/IconButton';
@@ -38,6 +38,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
+import * as queryString from 'query-string'
 
 function Copyright() {
   return (
@@ -87,8 +88,8 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
-  password : {
-    margin :theme.spacing(2,0,2)
+  password: {
+    margin: theme.spacing(2, 0, 2)
   }
 }));
 
@@ -97,7 +98,8 @@ export default function SignIn() {
   const [password, setPassword] = React.useState("");
 
   const [showPassword, setShowPassword] = React.useState(false);
-  
+
+  const [facebookLoginUrl, setfacebookLoginUrl] = React.useState('');
 
   const [open, setOpen] = React.useState(false);
 
@@ -105,9 +107,9 @@ export default function SignIn() {
 
   const loggedIn = useSelector((state) => state.loggedIn);
 
- const alert = useSelector((state) => state.alert);
+  const alert = useSelector((state) => state.alert);
 
-  
+
 
   const history = useHistory();
 
@@ -115,23 +117,39 @@ export default function SignIn() {
 
   useEffect(() => {
 
-    if(alert)
-    {
+    if (alert) {
       handleClose()
       setOpenSnack(true)
     }
-  
-    },[alert]);
+
+  }, [alert]);
+
+  useEffect(() => {
+
+    const stringifiedParams = queryString.stringify({
+      client_id: 235481255027088,
+      redirect_uri: 'http://localhost:3000/facebook/success',
+      scope: ['email', 'user_friends'].join(','), // comma seperated string
+      response_type: 'code',
+      auth_type: 'rerequest',
+      //display: 'popup',
+    });
+    
+    const url = `https://www.facebook.com/v4.0/dialog/oauth?${stringifiedParams}`;
+
+    setfacebookLoginUrl(url)
+
+  }, []);
 
   //console.log(loggedIn)
 
   if (loggedIn) {
     console.log(loggedIn);
-    
-   history.push("/home");
+
+    history.push("/home");
   }
 
- 
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -150,7 +168,7 @@ export default function SignIn() {
 
       //history.push('/')
     } else {
-    window.alert("Username & Password cannot be blank");
+      window.alert("Username & Password cannot be blank");
     }
     // window.location.assign("/home")
   };
@@ -160,15 +178,15 @@ export default function SignIn() {
   };
 
   const handleCloseSnack = () => {
-    if(openSnack){
-    setOpenSnack(false);
-   // dispatch(actions.reset())
+    if (openSnack) {
+      setOpenSnack(false);
+      // dispatch(actions.reset())
     }
   };
 
   const classes = useStyles();
 
-  const handleClickShowPassword = () =>{
+  const handleClickShowPassword = () => {
 
     setShowPassword(!showPassword)
 
@@ -199,31 +217,31 @@ export default function SignIn() {
               autoFocus
               onChange={handleChange}
             />
-           
-             <FormControl  fullWidth className={classes.password}  variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-password">Password *</InputLabel>
-            <OutlinedInput
-            id="outlined-adornment-password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            name='password'
-            onChange={handleChange}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle password visibility"
-                   onClick={handleClickShowPassword}
-                  // onMouseDown={handleMouseDownPassword}
-                  edge="end"
-                >
-                  {showPassword ? <Visibility /> : <VisibilityOff />}
-                </IconButton>
-              </InputAdornment>
-            }
-            labelWidth={90}
-          />
-          </FormControl>
-          
+
+            <FormControl fullWidth className={classes.password} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-password">Password *</InputLabel>
+              <OutlinedInput
+                id="outlined-adornment-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                name='password'
+                onChange={handleChange}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      // onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                labelWidth={90}
+              />
+            </FormControl>
+
 
             <Button
               type="submit"
@@ -237,7 +255,7 @@ export default function SignIn() {
             <Dialog
               className={classes.dialog}
               open={open}
-              //onClose={handleClose}
+            //onClose={handleClose}
             >
               <DialogContent>
                 {" "}
@@ -249,7 +267,7 @@ export default function SignIn() {
               autoHideDuration={6000}
               onClose={handleCloseSnack}
             >
-              <Alert onClose={handleCloseSnack} severity={alert?alert.type:'success'}>
+              <Alert onClose={handleCloseSnack} severity={alert ? alert.type : 'success'}>
                 {alert ? alert.message : 'sample'}
               </Alert>
             </Snackbar>
@@ -268,9 +286,9 @@ export default function SignIn() {
           </Grid>
           <Grid container>
             <Grid item xs>
-              <Link to="/forgot" variant="body2">
-                Forgot password?
-              </Link>
+              <a href={facebookLoginUrl}>
+                Login with Facebook
+              </a>
             </Grid>
             <Grid item>
               <Link to="/signup" variant="body2">

@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const routes = require('./routes/index')
 const mongoose = require('mongoose')
+const passport = require('./config/passport')
 
 const app = express();
 
@@ -28,7 +29,13 @@ console.log(publicDir)
 //   })
 //   .catch((error) => console.error(error));
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true }); 
+try{
+    mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true }); 
+}
+catch(err)
+{
+    console.log(err.message)
+}
 const db = mongoose.connection;
 db.on("error", error => console.log(error));
 db.once("open", () => console.log("connection to db established"));
@@ -36,6 +43,8 @@ app.use(express.json());
 // app.use(express.static('public'));
 
 app.use('/static', express.static('public'))
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(cors())
 const usersRouter = require("./routes/users");
